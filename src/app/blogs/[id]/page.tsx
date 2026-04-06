@@ -1,16 +1,20 @@
 'use client';
 
-import { use, useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import type { Post } from "@/lib/api";
 
-const SingleBlog = ({ params }) => {
-  const { id } = use(params);
+interface SingleBlogProps {
+  params: { id: string };
+}
 
-  const [post, setPost] = useState(null);
+const SingleBlog = ({ params }: SingleBlogProps) => {
+  const { id } = params;
+  const [post, setPost] = useState<Post | null>(null);
 
   useEffect(() => {
     const fetchPost = async () => {
       const res = await fetch(`/api/posts/${id}`);
-      const data = await res.json();
+      const data = (await res.json()) as Post;
       setPost(data);
     };
     fetchPost();

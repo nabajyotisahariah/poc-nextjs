@@ -27,8 +27,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "**/*.mts"
-, "src/app/pages/_app", "src/app/page.js", "src/app/layout.tsx"  ],
+    ".next/dev/types/**/*.ts"
+  ],
   "exclude": ["node_modules"]
 }

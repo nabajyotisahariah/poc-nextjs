@@ -1,15 +1,12 @@
-import React from 'react'
+interface NewsDetailProps {
+  params: { slug: string[] };
+  searchParams: { t?: string | string[] };
+}
 
-
-const NewsDetail = async ({ params, searchParams }) => {
-
-  const resolvedParams = await params;
-  const { slug } = resolvedParams;
-
-  const resolvedSearchParams = await searchParams;
-  const { t } = resolvedSearchParams; // e.g. "promotion" from ?t=promotion
-
-  console.log(slug, " slug ", resolvedSearchParams, " searchParams ");
+const NewsDetail = ({ params, searchParams }: NewsDetailProps) => {
+  const { slug } = params;
+  const tParam = searchParams.t;
+  const t = Array.isArray(tParam) ? tParam[0] : tParam;
 
   const category = slug[0] ?? "news";
   const title = slug[slug.length - 1]?.replace(/-/g, " ") ?? "Article";
@@ -19,7 +16,8 @@ const NewsDetail = async ({ params, searchParams }) => {
       <span className="article-badge">{category}</span>
       <h1>{title}</h1>
       <p className="article-meta">
-        {slug.join(" / ")}{t ? ` · ${t}` : ""}
+        {slug.join(" / ")}
+        {t ? ` · ${t}` : ""}
       </p>
       <div className="article-body">
         <p>
@@ -28,8 +26,8 @@ const NewsDetail = async ({ params, searchParams }) => {
         </p>
       </div>
     </article>
-  )
-}
+  );
+};
 
 export default NewsDetail;
 
