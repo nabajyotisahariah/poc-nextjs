@@ -1,0 +1,128 @@
+sudo api-get update
+
+sudo api-get upgrade
+
+sudo api-get install build-essential
+
+
+[ec2-user@ip-172-31-6-170 ~]$ sudo yum install nginx / sudo api-get install nginx
+Last metadata expiration check: 0:43:14 ago on Wed Apr 15 08:26:25 2026.
+Dependencies resolved.
+=============================================================================================================================================================
+ Package                                Architecture                 Version                                         Repository                         Size
+=============================================================================================================================================================
+Installing:
+ nginx                                  x86_64                       1:1.28.3-1.amzn2023.0.1                         amazonlinux                        33 k
+Installing dependencies:
+ gperftools-libs                        x86_64                       2.9.1-1.amzn2023.0.3                            amazonlinux                       308 k
+ libunwind                              x86_64                       1.4.0-5.amzn2023.0.3                            amazonlinux                        66 k
+ nginx-core                             x86_64                       1:1.28.3-1.amzn2023.0.1                         amazonlinux                       688 k
+ nginx-filesystem                       noarch                       1:1.28.3-1.amzn2023.0.1                         amazonlinux                       9.8 k
+ nginx-mimetypes                        noarch                       2.1.49-3.amzn2023.0.3                           amazonlinux                        21 k
+=======================================================================================
+
+install Node.js on Linux is using the Node Version Manager (NVM),
+    https://github.com/nvm-sh/nvm
+
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
+
+Logout & login again via shell
+
+Moptra_IT@DESKTOP-D6D6SDF MINGW64 /c
+$ ssh -i Naba.pem ec2-user@65.0.6.95
+
+[ec2-user@ip-172-31-6-170 ~]$ nvm\
+Node Version Manager (v0.40.4)
+  nvm install node                      Install the latest available version
+  nvm use node                          Use the latest version
+  nvm install --lts                     Install the latest LTS version
+  nvm use --lts                         Use the latest LTS version
+
+[ec2-user@ip-172-31-6-170 ~]$   nvm install --lts
+Installing latest LTS version.
+
+[ec2-user@ip-172-31-6-170 ~]$ node --version
+v24.14.1
+===============================================================================
+
+[ec2-user@ip-172-31-6-170 ~]$ git clone https://github.com/nabajyotisahariah/poc-nextjs.git
+Cloning into 'poc-nextjs'...
+
+drwxr-xr-x. 6 ec2-user ec2-user 16384 Apr 15 10:03 poc-nextjs
+
+[ec2-user@ip-172-31-6-170 poc-nextjs]$ ll
+drwxr-xr-x. 2 ec2-user ec2-user     57 Apr 15 10:03 Note
+-rw-r--r--. 1 ec2-user ec2-user   1450 Apr 15 10:03 README.md
+-rw-r--r--. 1 ec2-user ec2-user    465 Apr 15 10:03 eslint.config.mjs
+-rw-r--r--. 1 ec2-user ec2-user    247 Apr 15 10:03 next-env.d.ts
+-rw-r--r--. 1 ec2-user ec2-user    167 Apr 15 10:03 next.config.ts
+-rw-r--r--. 1 ec2-user ec2-user    116 Apr 15 10:03 open-next.config.ts
+-rw-r--r--. 1 ec2-user ec2-user 306827 Apr 15 10:03 package-lock.json
+-rw-r--r--. 1 ec2-user ec2-user    670 Apr 15 10:03 package.json
+drwxr-xr-x. 2 ec2-user ec2-user     91 Apr 15 10:03 public
+-rw-r--r--. 1 ec2-user ec2-user    309 Apr 15 10:03 serverless.yml
+drwxr-xr-x. 5 ec2-user ec2-user     46 Apr 15 10:03 src
+-rw-r--r--. 1 ec2-user ec2-user    756 Apr 15 10:03 tsconfig.json
+
+[ec2-user@ip-172-31-6-170 poc-nextjs]$ npm install
+
+[ec2-user@ip-172-31-6-170 poc-nextjs]$ npm run build
+
+> test-app@0.1.0 build
+> next build
+
+Route (app)          Revalidate  Expire
+┌ ○ /
+├ ○ /_not-found
+├ ○ /about
+├ ƒ /api/posts
+├ ƒ /api/posts/[id]
+├ ○ /blogs                   1h      1y
+├ ƒ /blogs/[id]
+├ ○ /news
+└ ƒ /news/[...slug]
+
+================================================================
+
+[ec2-user@ip-172-31-6-170 poc-nextjs]$ sudo nginx -t
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+
+[ec2-user@ip-172-31-6-170 poc-nextjs]$ netstat -tulnp | grep 3000
+tcp6       0      0 :::3000                 :::*                    LISTEN      8800/next-server (v
+
+[ec2-user@ip-172-31-6-170 poc-nextjs]$ netstat -tulnp | grep 80
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      -
+tcp6       0      0 :::80                   :::*                    LISTEN      -
+tcp6       0      0 :::3000                 :::*                    LISTEN      8800/next-server (v
+udp6       0      0 fe80::88b:92ff:fe73:546 :::*                                -
+=========
+
+[ec2-user@ip-172-31-6-170 poc-nextjs]$ systemctl status nginx.service
+● nginx.service - The nginx HTTP and reverse proxy server
+     Loaded: loaded (/usr/lib/systemd/system/nginx.service; disabled; preset: disabled)
+     Active: active (running) since Wed 2026-04-15 10:52:57 UTC; 2s ago
+    Process: 10046 ExecStartPre=/usr/bin/rm -f /run/nginx.pid (code=exited, status=0/SUCCESS)
+    Process: 10047 ExecStartPre=/usr/sbin/nginx -t (code=exited, status=0/SUCCESS)
+    Process: 10048 ExecStart=/usr/sbin/nginx (code=exited, status=0/SUCCESS)
+   Main PID: 10049 (nginx)
+      Tasks: 2 (limit: 516)
+     Memory: 2.7M
+        CPU: 48ms
+     CGroup: /system.slice/nginx.service
+             ├─10049 "nginx: master process /usr/sbin/nginx"
+             └─10050 "nginx: worker process"
+
+Apr 15 10:52:57 ip-172-31-6-170.ap-south-1.compute.internal systemd[1]: Starting nginx.service - The nginx HTTP and reverse proxy server...
+Apr 15 10:52:57 ip-172-31-6-170.ap-south-1.compute.internal nginx[10047]: nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+Apr 15 10:52:57 ip-172-31-6-170.ap-south-1.compute.internal nginx[10047]: nginx: configuration file /etc/nginx/nginx.conf test is successful
+Apr 15 10:52:57 ip-172-31-6-170.ap-south-1.compute.internal systemd[1]: Started nginx.service - The nginx HTTP and reverse proxy server.
+
+[ec2-user@ip-172-31-6-170 poc-nextjs]$ ps -ef |grep nginx
+root        9189    5085  0 10:24 pts/2    00:00:00 sudo vim /etc/nginx/nginx.conf
+root        9192    9189  0 10:24 pts/3    00:00:00 sudo vim /etc/nginx/nginx.conf
+root        9193    9192  0 10:24 pts/3    00:00:00 vim /etc/nginx/nginx.conf
+root       10049       1  0 10:52 ?        00:00:00 nginx: master process /usr/sbin/nginx
+nginx      10050   10049  0 10:52 ?        00:00:00 nginx: worker process
+ec2-user   10054    5085  0 10:53 pts/2    00:00:00 grep --color=auto nginx
+[ec2-user@ip-172-31-6-170 poc-nextjs]$

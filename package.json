@@ -6,6 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "deploy:aws": "npm run build && npx serverless deploy",
+    "open-next:build": "npx open-next build",
+    "open-next:deploy": "npx open-next deploy",
     "lint": "eslint"
   },
   "dependencies": {
