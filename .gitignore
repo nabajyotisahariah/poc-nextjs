@@ -38,3 +38,6 @@ models/
 # IDE
 .vscode/
 .idea/
+
+.open-next/
+.serverless/
