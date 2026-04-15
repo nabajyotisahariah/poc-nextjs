@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:staging": "next build",
     "start": "next start",
     "deploy:aws": "npm run build && npx serverless deploy",
     "open-next:build": "npx open-next build",

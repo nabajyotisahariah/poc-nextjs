@@ -1,0 +1,141 @@
+
+
+Core Docker Commands
+docker run: Creates and starts a new container from an image. Use -d for background mode and -p to map ports (e.g., docker run -p 80:80 nginx).
+docker ps: Lists running containers. Adding the -a flag lists all containers, including stopped ones.
+docker stop <id>: Gracefully stops a running container.
+docker start <id>: Restarts a previously stopped container.
+docker exec -it <id> bash: Opens an interactive shell session inside a running container.
+docker rm <id>: Removes a stopped container. Use -f to force-remove a running one.  
+
+Docker to run ubuntu OS image under a container
+----------
+   docker run -it ubuntu   (Spin up a new container of Ubuntu OS image)
+   docker container ls     (Gives the list of running docker container)
+   docker container ls -a  (Gives the list of stopped container too)
+   docker start|stop ubuntu
+   docker exec ubuntu ls    (Gives the container file system)
+   docker exec -it ubuntu (t - terminal , i - interrative)
+
+Note:
+   1. container runs the images. A container might have multiple images. Container don't share any information each other
+   2. Docker images available https://hub.docker.com/_/node 
+      24-alpine, 24-alpine3.23, 24.14-alpine, 24.14-alpine3.23, 24.14.1-alpine, 24.14.1-alpine3.23, krypton-alpine, krypton-alpine3.23, lts-alpine, lts-alpine3.23
+==============================
+[ec2-user@ip-172-31-6-170 ~]$ sudo yum install docker
+Last metadata expiration check: 5:25:47 ago on Wed Apr 15 08:26:25 2026.
+Dependencies resolved.
+
+=========================================================
+ Package       Architecture         Version  Repository                         
+Installing:
+ docker       x86_64              25.0.14-1.amzn2023.0.3    amazonlinux                           46 M
+
+[ec2-user@ip-172-31-6-170 ~]$ sudo systemctl start docker
+
+[ec2-user@ip-172-31-6-170 ~]$ sudo docker info
+Client:
+ Version:    25.0.14
+ Context:    default
+ Debug Mode: false
+
+[ec2-user@ip-172-31-6-170 ~]$ sudo docker ps
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+
+[ec2-user@ip-172-31-6-170 ~]$ sudo docker run -it node:24-alpine
+Unable to find image 'node:24-alpine' locally
+24-alpine: Pulling from library/node
+Digest: sha256:01743339035a5c3c11a373cd7c83aeab6ed1457b55da6a69e014a95ac4e4700b
+Status: Downloaded newer image for node:24-alpine
+Welcome to Node.js v24.14.1.
+
+[ec2-user@ip-172-31-6-170 ~]$ sudo docker run -it node
+Unable to find image 'node:latest' locally
+latest: Pulling from library/node
+Digest: sha256:3953ec6a2c10154a58ccf4ba48083ddfe3f8641d63f0d1d5cb8a4a78169123a7
+Status: Downloaded newer image for node:latest
+Welcome to Node.js v25.9.0.
+Type ".help" for more information.
+
+[ec2-user@ip-172-31-6-170 ~]$ sudo docker images
+REPOSITORY   TAG         IMAGE ID       CREATED       SIZE
+node         latest      e41e9eb261dc   8 days ago    1.13GB
+node         24-alpine   5388a27f19ee   2 weeks ago   160MB
+
+[ec2-user@ip-172-31-6-170 ~]$ sudo docker container ls -a
+CONTAINER ID   IMAGE              CREATED         STATUS                     PORTS     NAMES
+bf1e88255146   node             4 minutes ago   Exited (0) 2 minutes ago             epic_gagarin
+6fd55f42ba9c   node:24-alpine   2 hours ago     Exited (0) 2 hours ago               wonderful_ganguly
+d311aa78c329   node:24-alpine   2 hours ago     Exited (0) 2 hours ago               interesting_moser
+
+Running docker application. Next JS application running 3000 port, mapped 80 port behalf of 3000 Port
+[ec2-user@ip-172-31-6-170 ~]$ sudo docker run -it -p 80:3000 nextjs-application
+
+Enviroment Variable in Docket
+[ec2-user@ip-172-31-6-170 ~]$ sudo docker run -it -p 80:3000 -e key1=value1 -e key2=value2 nextjs-application
+
+======================================================
+Dockerize Application
+
+[ec2-user@ip-172-31-6-170 poc-nextjs]$ cat Dockerfile
+FROM node:latest
+
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+
+# copying all the files from your file system to container file system
+COPY package.json .
+
+# install all dependencies
+RUN npm install
+
+# copy oter files as well
+COPY ./ .
+
+RUN npm run build
+
+#expose the port
+EXPOSE 3000
+
+# command to run when intantiate an image
+CMD ["npm","run","start"]
+
+[ec2-user@ip-172-31-6-170 poc-nextjs]$ sudo docker build -t nextjs-application .
+[+] Building 106.8s (12/12) nextjs-application                                                                                                 
+
+[ec2-user@ip-172-31-6-170 poc-nextjs]$ sudo docker images
+REPOSITORY           TAG         IMAGE ID       CREATED              SIZE
+nextjs-application   latest      8cd13947da2a   About a minute ago   2.79GB
+<none>               <none>      6a50bc3e6016   20 minutes ago       2.73GB
+node                 latest      e41e9eb261dc   8 days ago           1.13GB
+node                 24-alpine   5388a27f19ee   2 weeks ago          160MB
+
+[ec2-user@ip-172-31-6-170 poc-nextjs]$ sudo docker run -p 80:3000 nextjs-application
+
+> test-app@0.1.0 start
+> next start
+
+▲ Next.js 16.2.1
+- Local:         http://localhost:3000
+- Network:       http://172.17.0.2:3000
+✓ Ready in 454ms
+⚠ "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+
+
+[ec2-user@ip-172-31-6-170 ~]$ curl http://localhost
+<!DOCTYPE html><html lang="en" class="geist_a71539c9-module__T19VS">
+
+
+[ec2-user@ip-172-31-6-170 ~]$ sudo docker images
+REPOSITORY           TAG         IMAGE ID       CREATED          SIZE
+nextjs-application   latest      8cd13947da2a   9 minutes ago    2.79GB
+<none>               <none>      6a50bc3e6016   28 minutes ago   2.73GB
+node                 latest      e41e9eb261dc   8 days ago       1.13GB
+node                 24-alpine   5388a27f19ee   2 weeks ago      160MB
+
+[ec2-user@ip-172-31-6-170 ~]$ sudo docker container ls
+CONTAINER ID   IMAGE      CREATED         STATUS         PORTS                                   NAMES
+a7b853de37d8   nextjs-application    7 minutes ago   Up 7 minutes   0.0.0.0:80->3000/tcp, :::80->3000/tcp   bold_haslett
+
+===============================
+

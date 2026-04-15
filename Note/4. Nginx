@@ -119,10 +119,5 @@ Apr 15 10:52:57 ip-172-31-6-170.ap-south-1.compute.internal nginx[10047]: nginx:
 Apr 15 10:52:57 ip-172-31-6-170.ap-south-1.compute.internal systemd[1]: Started nginx.service - The nginx HTTP and reverse proxy server.
 
 [ec2-user@ip-172-31-6-170 poc-nextjs]$ ps -ef |grep nginx
-root        9189    5085  0 10:24 pts/2    00:00:00 sudo vim /etc/nginx/nginx.conf
-root        9192    9189  0 10:24 pts/3    00:00:00 sudo vim /etc/nginx/nginx.conf
-root        9193    9192  0 10:24 pts/3    00:00:00 vim /etc/nginx/nginx.conf
 root       10049       1  0 10:52 ?        00:00:00 nginx: master process /usr/sbin/nginx
 nginx      10050   10049  0 10:52 ?        00:00:00 nginx: worker process
-ec2-user   10054    5085  0 10:53 pts/2    00:00:00 grep --color=auto nginx
-[ec2-user@ip-172-31-6-170 poc-nextjs]$
