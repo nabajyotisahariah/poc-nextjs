@@ -1,0 +1,19 @@
+service: nextjs-lambda-app
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ap-south-1
+
+functions:
+  nextApp:
+    handler: .open-next/server-function/index.handler
+    events:
+      - httpApi: '*'
+
+package:
+  patterns:
+    - '!node_modules/**'
+    - '!.next/cache/**'
+    - '!**/*.map'
+    - '!**/*.log'

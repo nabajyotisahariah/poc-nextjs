@@ -1,0 +1,164 @@
+AWS Lambda 
+    Serverless compute service that lets you run code without provisioning or managing servers
+    You can use Lambda to run code for virtually any type of application or backend service. 
+    https://ap-south-1.console.aws.amazon.com/lambda/home?region=ap-south-1#/discover
+
+Moptra_IT@DESKTOP-D6D6SDF MINGW64 /c/Nabajyoti WorkSpace/POC
+$ npm install -g serverless
+added 44 packages in 11s
+
+Moptra_IT@DESKTOP-D6D6SDF MINGW64 /c/Nabajyoti WorkSpace/POC
+$ serverless
+
+✔ Installed Serverless Framework v4.34.0
+Serverless ϟ Framework
+Welcome to Serverless Framework V.4
+Create a new project by selecting a Template to generate scaffolding for a specific use-case.
+
+√ Select A Template: · AWS / Node.js / HTTP API
+√ Name Your Project: · poc-serverless-project
+✔ Template Downloaded
+Create or select an existing App below to associate with your Service, or skip.
+√ Create Or Select An Existing App: · Create A New App
+√ Name Your New App: · hello
+No valid AWS Credentials were found in your environment variables or on your machine. Serverless Framework needs these to access your AWS account and deploy resources to it. Choose an option below to set up AWS Credentials.
+√ AWS Credentials Set-Up Method: · Skip & Set Later (AWS SSO, ENV Vars)
+You can set up AWS Credentials later using AWS SSO, environment variables, or other methods. You will not be able to deploy resources to AWS until you set up AWS Credentials.
+Your new Service "poc-serverless-project" is ready. Here are next steps:
+• Open Service Directory: cd poc-serverless-project
+• Install Dependencies: npm install (or use another package manager)
+• Deploy Your Service: serverless deploy
+
+Moptra_IT@DESKTOP-D6D6SDF MINGW64 /c/Nabajyoti WorkSpace/POC
+$ ll
+total 20
+drwxr-xr-x 1 Moptra_IT 197121 0 Apr 14 11:48 poc-serverless-project/
+
+poc-serverless-project
+$ ll
+total 9
+-rw-r--r-- 1 Moptra_IT 197121 2531 Aug  6  2025 README.md
+-rw-r--r-- 1 Moptra_IT 197121  183 Aug  6  2025 handler.js
+-rw-r--r-- 1 Moptra_IT 197121  685 Apr 14 11:52 serverless.yml
+
+============================================================
+Creating IAM Role for Lambda Function...
+
+https://us-east-1.console.aws.amazon.com/iam/home?region=ap-south-1#/users
+
+Users -> 
+      Create User -> Set Permission  -> Review & Create
+
+Access Key : AKIASN4Q4QP24CGWKSMR
+Secret Access Key : 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
+
+Policy Name                   Policy Type                 Attachment Type
+AdministratorAccess     AWS managed - job function          Directly
+
+============================================================
+AWS env setup
+poc-serverless-project
+$ export AWS_ACCESS_KEY_ID=AKIASN4Q4QP24CGWKSMR
+$ export AWS_SECRET_ACCESS_KEY=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
+
+
+============================================================
+$ serverless deploy list
+
+2026-04-14 07:27:59 UTC
+Timestamp: 1776151679049
+Files:
+  - compiled-cloudformation-template.json
+  - poc-serverless-project.zip
+  - serverless-state.json
+
+============================================================
+handler.js
+version.js
+serverless.yml
+
+And mapping works correctly:
+
+Function	          File	          Export
+hello	            handler.js	      hello
+pversion	        version.js	      handler
+
+$ serverless invoke local --function hello
+{
+    "statusCode": 200,
+    "body": "{\"message\":\"Go Serverless v4! Your function executed successfully!\"}"
+}
+
+$ serverless invoke local --function pversion
+{
+    "statusCode": 200,
+    "body": "{\"version\":\"1.0.0\",\"message\":\"Version endpoint\"}"
+}
+
+================================================
+
+$ serverless dev
+Dev ϟ Mode
+Dev Mode redirects live AWS Lambda events to your local code enabling you to develop faster without the slowness of deploying changes.
+Run "serverless deploy" after a Dev Mode session to restore original code.
+[!] Your local machine is using Node.js v23, which is not yet supported by AWS Lambda. Falling back to nodejs20.x for dev mode deployment.
+
+Functions:
+  hello: poc-serverless-project-dev-hello
+  pversion: poc-serverless-project-dev-pversion
+
+Endpoints:
+  GET - https://u51icyidp2.execute-api.ap-south-1.amazonaws.com/
+  GET - https://u51icyidp2.execute-api.ap-south-1.amazonaws.com/version
+
+✔ Connected (Ctrl+C to cancel)
+
+→ λ pversion ── aws:apigateway:v2:get:/version
+← λ pversion (200)
+
+https://u51icyidp2.execute-api.ap-south-1.amazonaws.com/version
+Response 
+    {"version":"1.0.0","message":"Version endpoint"}
+==========================================  
+
+$ serverless deploy
+
+Deploying "poc-serverless-project" to stage "dev" (ap-south-1)
+
+✔ Service deployed to stack poc-serverless-project-dev (50s)
+
+endpoints:
+  GET - https://u51icyidp2.execute-api.ap-south-1.amazonaws.com/
+  GET - https://u51icyidp2.execute-api.ap-south-1.amazonaws.com/version
+functions:
+  hello: poc-serverless-project-dev-hello (4.5 kB)
+  pversion: poc-serverless-project-dev-pversion (4.5 kB)
+
+https://u51icyidp2.execute-api.ap-south-1.amazonaws.com/version
+
+Response
+  {"version":"1.0.0","message":"Version endpoint"}
+================================================
+
+$ cat app/movie-list.js
+exports.handler = async (event) => {
+  const movies = [
+    { id: 1, title: "The Shawshank Redemption", year: 1994 },
+    { id: 2, title: "The Godfather", year: 1972 },
+    { id: 3, title: "The Dark Knight", year: 2008 },
+  ];
+  return {
+
+    statusCode: 200,
+    body: JSON.stringify(movies),
+  };
+};
+Moptra_IT@DESKTOP-D6D6SDF MINGW64 /c/Nabajyoti WorkSpace/POC/poc-serverless-project (main)
+$ serverless invoke local --function movielist
+
+
+{
+    "statusCode": 200,
+    "body": "[{\"id\":1,\"title\":\"The Shawshank Redemption\",\"year\":1994},{\"id\":2,\"title\":\"The Godfather\",\"year\":1972},{\"id\":3,\"title\":\"The Dark Knight\",\"year\":2008}]"
+}
+
