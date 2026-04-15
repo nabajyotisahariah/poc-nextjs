@@ -190,3 +190,51 @@ Fix Options
 	};
 
 	👉 This is the most common approach in production
+=================================
+$ npx serverless deploy
+    at Object.spawnSync (node:internal/child_process:1120:20)
+    at spawnSync (node:child_process:868:24)
+}
+
+$ npm install -g serverless
+added 44 packages in 9s
+
+$ ll /c/Users/Moptra_IT/AppData/Roaming/npm/node_modules/
+total 4
+drwxr-xr-x 1 Moptra_IT 197121 0 Apr 15 12:30 serverless/
+
+$ ll /c/Users/Moptra_IT/AppData/Roaming/npm/node_modules/serverless/
+total 74
+-rw-r--r-- 1 Moptra_IT 197121 29722 Apr 15 12:30 README.md
+-rw-r--r-- 1 Moptra_IT 197121  6787 Apr 15 12:30 binary.js
+drwxr-xr-x 1 Moptra_IT 197121     0 Apr 15 12:30 node_modules/
+-rw-r--r-- 1 Moptra_IT 197121 19046 Apr 15 12:30 npm-shrinkwrap.json
+-rw-r--r-- 1 Moptra_IT 197121   759 Apr 15 12:30 package.json
+-rwxr-xr-x 1 Moptra_IT 197121   105 Apr 15 12:30 postInstall.js*
+-rwxr-xr-x 1 Moptra_IT 197121   105 Apr 15 12:30 run.js*
+
+$  serverless --version
+Serverless ϟ Framework 4.34.0
+
+$  serverless --version
+
+Serverless ϟ Framework 4.34.0
+
+
+Moptra_IT@DESKTOP-D6D6SDF MINGW64 /c/Nabajyoti WorkSpace/POC/poc-nextjs (main)
+$  serverless deploy
+
+Deploying "nextjs-lambda-app" to stage "dev" (ap-south-1)
+
+✔ Service deployed to stack nextjs-lambda-app-dev (93s)
+
+endpoint: ANY - https://qsd17xow26.execute-api.ap-south-1.amazonaws.com
+functions:
+  nextApp: nextjs-lambda-app-dev-nextApp (134 MB)
+
+
+https://ap-south-1.console.aws.amazon.com/lambda/home?region=ap-south-1#/functions
+
+Function name                               Runtime             Type            Last modified
+nextjs-lambda-app-dev-nextApp           Node.js 20.x            Standar     2 minutes ago
+====================================================
