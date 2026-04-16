@@ -49,8 +49,8 @@ https://us-east-1.console.aws.amazon.com/iam/home?region=ap-south-1#/users
 Users -> 
       Create User -> Set Permission  -> Review & Create
 
-Access Key : AKIASN4Q4QP2YRRN27X6
-Secret Access Key : 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
+Access Key : NA
+Secret Access Key : NA
 
 Policy Name                   Policy Type                 Attachment Type
 AdministratorAccess     AWS managed - job function          Directly
@@ -58,8 +58,8 @@ AdministratorAccess     AWS managed - job function          Directly
 ============================================================
 AWS env setup
 poc-serverless-project
-$ export AWS_ACCESS_KEY_ID=AKIASN4Q4QP2YRRN27X6
-$ export AWS_SECRET_ACCESS_KEY=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
+$ export AWS_ACCESS_KEY_ID=NA
+$ export AWS_SECRET_ACCESS_KEY=NA
 
 
 ============================================================
