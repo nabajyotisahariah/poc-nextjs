@@ -7,7 +7,7 @@ provider:
 
 functions:
   nextApp:
-    handler: .open-next/server-function/index.handler
+    handler: handler.handler
     events:
       - httpApi: '*'
 
