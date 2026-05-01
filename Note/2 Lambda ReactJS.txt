@@ -1,3 +1,244 @@
 https://www.youtube.com/watch?v=2SwlDpfGkXM
 
-Deploying a NextJS app to AWS using the Serverless Framework
+To deploy a **Next.js application on AWS Lambda using Docker**, the best production-ready path is to containerize the app and run it as a **Lambda Container Image**. This works well for SSR/API routes and avoids many zip-package limits.
+
+---
+
+# ✅ Architecture
+
+**Next.js App** → **Docker Image** → **Amazon ECR** → **AWS Lambda** → **API Gateway / Function URL**
+
+---
+
+# ✅ Step 1: Create Next.js App
+    npx create-next-app nextjs-lambda-app
+    cd nextjs-lambda-app
+
+# ✅ Step 2: Install Server Adapter
+    Use a lightweight server like `serverless-http` with Express, or run standalone mode.
+
+    For Next.js 13+/12+, easiest is standalone output.
+
+    Update `next.config.js`
+
+    module.exports = {
+        output: "standalone",
+    };
+```
+
+---
+
+# ✅ Step 3: Build App
+
+```bash
+npm run build
+```
+
+This creates:
+
+```bash
+.next/standalone
+.next/static
+public/
+```
+
+---
+
+# ✅ Step 4: Create Lambda Server File
+
+Create `server.js`
+
+```js
+const { createServer } = require("http");
+const next = require("next");
+
+const app = next({
+  dev: false,
+  conf: { distDir: ".next" }
+});
+
+const handle = app.getRequestHandler();
+
+let server;
+
+exports.handler = async (event, context) => {
+  if (!server) {
+    await app.prepare();
+    server = createServer((req, res) => {
+      handle(req, res);
+    });
+  }
+
+  return {
+    statusCode: 200,
+    body: "Next.js running on Lambda"
+  };
+};
+```
+
+---
+
+# ✅ Better Approach (Recommended)
+
+Use **OpenNext** (best for Lambda + Next.js)
+
+```bash
+npm install -D open-next
+```
+
+Build:
+
+```bash
+npx open-next build
+```
+
+This prepares Lambda-compatible Next.js output.
+
+---
+
+# ✅ Step 5: Dockerfile for Lambda
+
+Create `Dockerfile`
+
+```dockerfile
+FROM public.ecr.aws/lambda/nodejs:18
+
+WORKDIR ${LAMBDA_TASK_ROOT}
+
+COPY package*.json ./
+RUN npm install --production
+
+COPY . .
+
+RUN npm run build
+
+CMD ["server.handler"]
+```
+
+---
+
+# ✅ Step 6: Build Docker Image
+
+```bash
+docker build -t nextjs-lambda .
+```
+
+---
+
+# ✅ Step 7: Test Locally
+
+```bash
+docker run -p 9000:8080 nextjs-lambda
+```
+
+Invoke:
+
+```bash
+curl http://localhost:9000/2015-03-31/functions/function/invocations -d '{}'
+```
+
+---
+
+# ✅ Step 8: Push to Amazon ECR
+
+```bash
+aws ecr create-repository --repository-name nextjs-lambda
+```
+
+Login:
+
+```bash
+aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin <account-id>.dkr.ecr.ap-south-1.amazonaws.com
+```
+
+Tag:
+
+```bash
+docker tag nextjs-lambda:latest <account-id>.dkr.ecr.ap-south-1.amazonaws.com/nextjs-lambda:latest
+```
+
+Push:
+
+```bash
+docker push <account-id>.dkr.ecr.ap-south-1.amazonaws.com/nextjs-lambda:latest
+```
+
+---
+
+# ✅ Step 9: Create Lambda from Container
+
+```bash
+aws lambda create-function \
+--function-name nextjs-lambda \
+--package-type Image \
+--code ImageUri=<ECR_IMAGE_URI> \
+--role arn:aws:iam::<account-id>:role/lambda-role
+```
+
+---
+
+# ✅ Step 10: Add API Gateway / Function URL
+
+Simplest:
+
+```bash
+aws lambda create-function-url-config \
+--function-name nextjs-lambda \
+--auth-type NONE
+```
+
+---
+
+# ✅ Best Production Method (Recommended)
+
+Use:
+
+### ✅ OpenNext + Docker + Lambda + CloudFront + S3
+
+This gives:
+
+* SSR pages
+* Static files in S3
+* Image optimization
+* ISR
+* API routes
+* Fast CDN
+
+---
+
+# ⚠ Important Lambda Limits
+
+| Limit          | Value    |
+| -------------- | -------- |
+| Max timeout    | 15 min   |
+| Max image size | 10 GB    |
+| Cold starts    | Possible |
+| Ephemeral disk | 10 GB    |
+
+---
+
+# 🚀 My Recommendation for You
+
+Since you already work on Next.js + AWS:
+
+## Use:
+
+```bash
+Next.js + OpenNext + Docker + Lambda + CloudFront + S3
+```
+
+This is **production-grade architecture**.
+
+---
+
+# If you want, I can also give you:
+
+## 🔥 Full Production Ready Next.js Docker Lambda Project Structure
+
+## 🔥 CI/CD Auto Deploy to Lambda
+
+## 🔥 Next.js Static JS/CSS Sync to S3
+
+## 🔥 Zero Downtime Deployment
+
+Just say **"give production setup"**

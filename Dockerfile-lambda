@@ -14,6 +14,12 @@ RUN npm install
 
 COPY . .
 
+#Creating a build folder and copying the necessary files for the lambda function
 RUN npm run build
 
+#The open-next build command will create a .open-next folder with the necessary files for the lambda function
+RUN npx open-next build
+
+#The handler file is located in the .open-next folder, so we need to change the working directory to that folder
+WORKDIR ${LAMBDA_TASK_ROOT}/.open-next  
 CMD ["server.handler"]
