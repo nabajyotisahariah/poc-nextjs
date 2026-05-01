@@ -1,0 +1,396 @@
+Production setup for **Next.js static assets offloading to Amazon S3** during deployment.
+
+You want:
+
+* Build Next.js app
+* Upload generated `.js`, `.css`, chunks, images from `.next/static`
+* Store in **s3://s3-nextjs-bucket**
+* Serve assets from S3 / CloudFront
+
+For the S3 bucket "s3-nextjs-bucket", web url to access it where region "ap-south-1"
+	https://s3-nextjs-bucket.s3.ap-south-1.amazonaws.com/
+---
+
+# ✅ Best Production Approach
+	## Next.js generates files here:
+
+	.next/static/
+	These should be synced to S3.
+
+# ✅ Step 1: Install AWS CLI
+	aws configure
+
+	Add:
+		AWS Access Key
+		AWS Secret
+		Region
+# ✅ Step 2: Add deploy script in package.json
+
+   {
+  	"scripts": {
+    	     "build": "next build",
+    	     "deploy": "next build && aws s3 sync .next/static s3://s3-nextjs-bucket/_next/static --delete"
+  	}
+   }
+# ✅ Run Deployment
+
+	npm run deploy
+
+	next build
+	aws s3 sync .next/static s3://s3-nextjs-bucket/_next/static --delete
+
+	Because browser requests:
+
+	https://yourdomain.com/_next/static/chunks/main.js
+
+# ✅ Step 3: Use S3 as Asset Prefix
+
+	Update `next.config.js`
+
+	module.exports = {
+  		assetPrefix: 'https://s3-nextjs-bucket.s3.amazonaws.com',
+	};
+
+	OR Better (CloudFront):
+
+	module.exports = {
+  		assetPrefix: 'https://cdn.yourdomain.com',
+	};
+
+# ✅ Final Architecture
+
+	User hits website	
+	↓
+	EC2 / ECS / Lambda serves HTML
+	↓
+	JS/CSS loads from S3 / CloudFront
+
+	---
+
+# ✅ Recommended with Cache Headers
+
+	aws s3 sync .next/static s3://s3-nextjs-bucket/_next/static \
+	--cache-control "public,max-age=31536000,immutable" \
+	--delete
+
+# ✅ Full Production Script
+
+```json
+{
+  "scripts": {
+    "deploy": "next build && aws s3 sync .next/static s3://s3-nextjs-bucket/_next/static --delete --cache-control 'public,max-age=31536000,immutable'"
+  }
+}
+```
+
+---
+
+# ✅ If using Docker Deploy
+
+Inside Docker pipeline:
+
+```bash
+npm run build
+aws s3 sync .next/static s3://s3-nextjs-bucket/_next/static --delete
+docker build -t app .
+docker push ...
+```
+
+---
+
+# ✅ If using ECS / EC2
+
+Use this method.
+
+---
+
+# ✅ If using Lambda / Serverless
+
+Even better:
+
+* Lambda serves SSR pages
+* S3 serves static JS/CSS
+
+---
+
+# ✅ Bonus (Recommended)
+
+Use CloudFront in front of S3:
+
+```bash
+cdn.yourdomain.com
+```
+
+Faster globally.
+
+---
+
+# ✅ Want FULL CI/CD?
+
+I can also give you:
+
+## 🚀 Next.js + Docker + ECS + S3 Static Sync + CloudFront + Zero Downtime Deployment
+
+Just say **"Give production setup"**
+
+
+
+======================
+
+## 🚀 Production Setup: Next.js + Docker + ECS + S3 Static Sync + CloudFront + Zero Downtime
+
+This is a scalable production architecture for your Next.js app.
+
+---
+
+# ✅ Final Architecture
+
+```text
+User
+ ↓
+CloudFront CDN
+ ├── /_next/static/*  → S3 Bucket
+ └── /*               → ECS (Next.js App)
+```
+
+### Benefits
+
+✅ JS/CSS served from CDN
+✅ Fast global delivery
+✅ Smaller ECS load
+✅ Zero downtime deployments
+✅ Cheap static hosting
+
+---
+
+# ✅ Folder Structure
+
+```text
+project/
+ ├── Dockerfile
+ ├── next.config.js
+ ├── package.json
+ ├── deploy.sh
+```
+
+---
+
+# ✅ 1. next.config.js
+
+Use CloudFront URL for assets.
+
+```js
+module.exports = {
+  assetPrefix: process.env.CDN_URL || "",
+};
+```
+
+Example:
+
+```env
+CDN_URL=https://cdn.yourdomain.com
+```
+
+---
+
+# ✅ 2. Dockerfile
+
+```dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install --production
+
+COPY . .
+
+RUN npm run build
+
+EXPOSE 3000
+
+CMD ["npm", "start"]
+```
+
+---
+
+# ✅ 3. package.json
+
+```json
+{
+  "scripts": {
+    "build": "next build",
+    "start": "next start -p 3000"
+  }
+}
+```
+
+---
+
+# ✅ 4. S3 Sync Script
+
+Create:
+
+## deploy.sh
+
+```bash
+#!/bin/bash
+
+set -e
+
+echo "Build Next.js..."
+npm install
+npm run build
+
+echo "Sync static files to S3..."
+aws s3 sync .next/static s3://s3-nextjs-bucket/_next/static \
+--delete \
+--cache-control "public,max-age=31536000,immutable"
+
+echo "Build Docker..."
+docker build -t nextjs-app .
+
+echo "Push Docker to ECR..."
+docker tag nextjs-app:latest YOUR_ECR_URL/nextjs-app:latest
+docker push YOUR_ECR_URL/nextjs-app:latest
+
+echo "Deploy ECS..."
+aws ecs update-service \
+--cluster my-cluster \
+--service my-service \
+--force-new-deployment
+```
+
+---
+
+# ✅ 5. CloudFront Setup
+
+## Origin 1:
+
+S3 bucket
+
+```text
+s3-nextjs-bucket
+```
+
+Path pattern:
+
+```text
+/_next/static/*
+```
+
+## Origin 2:
+
+ECS Load Balancer
+
+```text
+/*
+```
+
+---
+
+# ✅ 6. Zero Downtime ECS
+
+Use:
+
+```text
+Minimum healthy percent = 100
+Maximum percent = 200
+```
+
+So new container starts before old stops.
+
+---
+
+# ✅ 7. CI/CD Pipeline
+
+Use GitHub Actions / Jenkins:
+
+```bash
+git pull
+bash deploy.sh
+```
+
+---
+
+# ✅ 8. Result
+
+After deployment:
+
+### HTML from ECS
+
+```text
+https://yourdomain.com/
+```
+
+### JS/CSS from CDN
+
+```text
+https://cdn.yourdomain.com/_next/static/chunks/main.js
+```
+
+---
+
+# ✅ Recommended AWS Infra
+
+* ECS Fargate
+* ALB
+* S3
+* CloudFront
+* ECR
+* Route53
+* ACM SSL
+
+---
+
+# ✅ Cost Optimized
+
+Most traffic goes to S3/CDN, reducing ECS CPU cost.
+
+---
+
+# ✅ Pro Tip
+
+Enable Brotli + gzip on CloudFront.
+
+---
+
+# ✅ If You Want Best Setup for **Next.js SSR + ISR + API + Image Optimization**
+
+Say:
+
+## 🚀 “Give enterprise level Next.js AWS architecture”
+
+(very powerful setup)
+-------------------------------------------------------------------------------
+
+--delete is an AWS CLI sync option used with:
+
+aws s3 sync source destination --delete
+
+It means:
+	Delete files in the destination (S3 bucket) that no longer exist in the source folder.
+
+✅ Example
+	Suppose your local build folder:
+
+	.next/static/
+ 	├── main.js
+	├── style.css
+
+	And S3 bucket currently has:
+
+	_next/static/
+ 	├── main.js
+ 	├── style.css
+ 	├── old.js
+
+Run:
+	aws s3 sync .next/static s3://s3-nextjs-bucket/_next/static --delete
+	Result in S3:
+	_next/static/
+ 	├── main.js
+ 	├── style.css
+
+	✅ old.js gets removed.
+--------------------------------------------------------------------------------------

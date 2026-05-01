@@ -1,0 +1,165 @@
+Edited : 29th April 2026
+
+Deploying Docker Containers on AWS Elastic Container Service (ECS) | Container Orchestration
+	https://www.youtube.com/watch?v=AiiFbsAlLaI&t=1090s 
+------------------------------------------------------------------------------
+Docker Installation
+
+    ✅ Linux Type
+    	Run:
+	   cat /etc/os-release
+
+   	[ec2-user@ip-172-31-3-175 serverless-nodejs-project]$ cat /etc/os-release
+   	NAME="Amazon Linux"
+   	VERSION="2023"
+
+    ✅ Update Your System: 
+	Ensure all existing packages are up to date by running the update command. 
+	sudo dnf update -y
+    
+    ✅ Install Docker
+	Install the Docker Engine package directly from the Amazon Linux 2023 default repository
+	sudo dnf install -y docker
+    
+    ✅ Start and Enable the Docker Service 
+	Start the Docker daemon and configure it to launch automatically upon system boot.
+	sudo systemctl start docker
+	sudo systemctl enable docker
+   
+    ✅ Manage Docker as a Non-Root User (Optional) 
+        To run Docker commands without typing sudo every time, add your current user (typically ec2-user) to the docker group
+	sudo usermod -aG docker $USER
+
+        Important: You must log out and log back in (or restart your SSH session)
+
+	[ec2-user@ip-172-31-3-175 ~]$ docker images
+	REPOSITORY   TAG       IMAGE ID   CREATED   SIZE
+
+-------------------------------------------------------------------------------
+Node Installation 
+
+1. install Node.js on Linux is using the Node Version Manager (NVM),
+    https://github.com/nvm-sh/nvm
+
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
+
+2. [ec2-user@ip-172-31-6-170 ~]$ nvm
+  Node Version Manager (v0.40.4)
+  nvm install node                      Install the latest available version
+  nvm use node                          Use the latest version
+  nvm install --lts                     Install the latest LTS version
+  nvm use --lts                         Use the latest LTS version
+
+3. [ec2-user@ip-172-31-6-170 ~]$   nvm install --lts
+Installing latest LTS version.
+
+4. [ec2-user@ip-172-31-6-170 ~]$ node --version
+v24.14.1
+-------------------------------------------------------------------------------
+Git Checkout 
+1. git clone https://github.com/poc-nextjs.git
+   Cloning into 'poc-nextjs'...
+
+2. npm install; npm run build ; npm run start
+
+3. curl localhost:3000/api/health
+   {"status":"up"}
+
+Note: 
+1. For memory issue
+        rm -rf node_modules package-lock.json
+	npm cache clean --force
+        
+       sudo du -sh /var/lib/docker/
+           4.9G    /var/lib/docker/
+       sudo rm -rf /var/lib/docker/
+
+-------------------------------------------------------------------------------
+AWS ECR Repo
+
+https://ap-south-1.console.aws.amazon.com/ecr/private-registry/repositories?region=ap-south-1
+   Create Repository
+		ecr.ap-south-1.amazonaws.com/nabajyoti-nextjs
+
+   [ec2-user@ip-172-31-6-170 ~]$ aws --version
+    aws-cli/2.33.15 Python/3.9.25 Linux/6.1.166-197.305.amzn2023.x86_64 source/x86_64.amzn.2023
+
+   [ec2-user@ip-172-31-6-170 ~]$ docker --version
+    Docker version 25.0.14, build 0bab007
+
+   [ec2-user@ip-172-31-6-170 ~]$ aws configure
+   AWS Access Key ID [None]: NA
+   AWS Secret Access Key [None]: NA
+   Default region name [None]: ap-south-1
+   Default output format [None]: 
+   
+   [ec2-user@ip-172-31-6-170 ~]$ ls -lhta
+   drwx------. 3 ec2-user ec2-user  39 Apr 16 16:54 .docker
+   drwxr-xr-x. 2 ec2-user ec2-user  39 Apr 16 14:30 .aws
+
+
+   [ec2-user@ip-172-31-6-170 ~]$ cat .aws/credentials
+   [default]
+   aws_access_key_id = NA
+   aws_secret_access_key = NA
+	
+   [ec2-user@ip-172-31-6-170 ~]$ cat .aws/config
+   [default]
+   	region = ap-south-1
+
+    [ec2-user@ip-172-31-6-170 ~]$ aws sts get-caller-identity
+    {
+       "UserId": "NA",
+       "Account": "NA",
+       "Arn": "NA"
+     }
+
+    [ec2-user@ip-172-31-6-170 ~]$ aws configure list
+    NAME       : VALUE                    : TYPE             : LOCATION
+    profile    : <not set>                : None             : None
+    access_key : ****************W545     : shared-credentials-file :
+    secret_key : ****************ZLPv     : shared-credentials-file :
+    region     : ap-south-1               : config-file      : ~/.aws/config
+
+Use the following steps to authenticate and push an image to your repository. For additional registry authentication methods, including the Amazon ECR credential helper, see Registry authentication .
+
+1. Retrieve an authentication token and authenticate your Docker client to your registry. Use the AWS CLI:
+   [ec2-user]$ aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin dkr.ecr.ap-south-1.amazonaws.com
+   Login Succeeded
+
+2. Build your Docker image using the following command. For information on building a Docker file from scratch, see the instructions here . You can skip this step if your image has already been built:
+   [ec2-user]$ sudo docker build -t nabajyoti-nextjs .
+   [+] Building 4.3s (12/12) FINISHED                                                                                                                           
+
+3. After the build is completed, tag your image so you can push the image to this repository:
+   [ec2-user@ip-172-31-6-170 poc-nextjs]$ sudo docker images
+
+   REPOSITORY         TAG         IMAGE ID       CREATED        SIZE
+   nabajyoti-nextjs   latest      8cd13947da2a   16 hours ago   2.79GB
+   node               latest      e41e9eb261dc   9 days ago     1.13GB
+   node               24-alpine   5388a27f19ee   3 weeks ago    160MB
+
+   [ec2-user]$ sudo docker tag nabajyoti-nextjs:latest ecr.ap-south-1.amazonaws.com/nabajyoti-nextjs:latest
+
+   Removing Docker images
+   [ec2-user@ip-172-31-6-170 poc-nextjs]$ sudo docker images
+   REPOSITORY                                                       TAG         IMAGE ID       CREATED        SIZE
+   ecr.ap-south-1.amazonaws.com/nabajyoti-nextjs   latest      8cd13947da2a   16 hours ago   2.79GB
+   node                                                             latest      e41e9eb261dc   9 days ago     1.13GB
+   node                                                             24-alpine   5388a27f19ee   3 weeks ago    160MB
+
+   [ec2-user@ip-172-31-6-170 html]$  sudo docker rmi -f 8cd13947da2a [Removing by Image ID]
+   Deleted: sha256:8cd13947da2a4f1ec3412241cdc1932afb5aea2fd94ef8e1539e0ffda3f35a01
+
+   [ec2-user@ip-172-31-6-170 html]$ sudo docker images
+   REPOSITORY   TAG         IMAGE ID       CREATED       SIZE
+   node         latest      e41e9eb261dc   9 days ago    1.13GB
+   node         24-alpine   5388a27f19ee   3 weeks ago   160MB
+
+4. Run the following command to push this image to your newly created AWS repository:
+   [ec2-user]$ sudo docker push ecr.ap-south-1.amazonaws.com/nabajyoti-nextjs:latest
+   The push refers to repository [ecr.ap-south-1.amazonaws.com/nabajyoti-nextjs]
+   5d34134cf92f: Pushed
+   latest: digest: sha256:d0f946f4f194da28cbe2caca840e956cba193be352fab79a1cd52e9185609301 size: 3262
+
+--------------------------------------------------------------------------------------------------------------
