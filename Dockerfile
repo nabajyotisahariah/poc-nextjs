@@ -14,6 +14,8 @@ COPY ./ .
 
 RUN npm run build
 
+RUN aws s3 sync .next/static s3://s3-nextjs-bucket/_next/static --delete
+
 #expose the port
 EXPOSE 3000
 

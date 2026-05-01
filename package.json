@@ -5,8 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:staging": "next build",
     "start": "next start",
+    "build:staging": "next build",
+    "deploy:s3": "next build && aws s3 sync .next/static s3://s3-nextjs-bucket/_next/static --delete",
+    "deploy:s3cache": "next build && aws s3 sync .next/static s3://s3-nextjs-bucket/_next/static --delete --cache-control 'public,max-age=31536000,immutable'",
     "deploy:aws": "npm run build && npx serverless deploy",
     "open-next:build": "npx open-next build",
     "open-next:deploy": "npx open-next deploy",
