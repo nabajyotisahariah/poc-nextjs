@@ -3,23 +3,41 @@
 # so Docker cannot execute /bin/sh inside the container during build.
 
 #FROM public.ecr.aws/lambda/nodejs:20.2025.10.13.17-arm64
-FROM public.ecr.aws/lambda/nodejs:20-x86_64
+#FROM public.ecr.aws/lambda/nodejs:20-x86_64
 
-WORKDIR ${LAMBDA_TASK_ROOT}
+#WORKDIR ${LAMBDA_TASK_ROOT}
 
 #COPY package*.json ./
-COPY package.json .
+#COPY package.json .
 
-RUN npm install
+#RUN npm install
+
+#COPY . .
+
+#Creating a build folder and copying the necessary files for the lambda function
+#RUN npm run build
+
+#The open-next build command will create a .open-next folder with the necessary files for the lambda function
+#RUN npx open-next build
+
+#The handler file is located in the .open-next folder, so we need to change the working directory to that folder
+#WORKDIR ${LAMBDA_TASK_ROOT}/.open-next  
+#CMD ["server.handler"]
+
+FROM public.ecr.aws/lambda/nodejs:20-x86_64
+
+WORKDIR /var/task
+
+COPY package.json ./
+
+RUN npm ci
 
 COPY . .
 
-#Creating a build folder and copying the necessary files for the lambda function
 RUN npm run build
-
-#The open-next build command will create a .open-next folder with the necessary files for the lambda function
 RUN npx open-next build
 
-#The handler file is located in the .open-next folder, so we need to change the working directory to that folder
-WORKDIR ${LAMBDA_TASK_ROOT}/.open-next  
-CMD ["server.handler"]
+# Clean runtime folder
+RUN cp -r .open-next/server-function/* /var/task/
+
+CMD ["index.handler"]
